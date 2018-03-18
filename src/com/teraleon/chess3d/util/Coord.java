@@ -13,10 +13,21 @@ public class Coord {
 
 	@Override
 	public boolean equals(Object o) {
-		if (!(o instanceof Coord))
+		if (!(o instanceof Coord)) {
 			return false;
+		}
 
 		Coord that = (Coord) o;
 		return (this.x == that.x && this.y == that.y && this.z == that.z);
+	}
+	
+	@Override
+	public int hashCode() {
+		return x + 512*y + 262144*z;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("(%d,%d,%d)", x, y, z);
 	}
 }

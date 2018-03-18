@@ -10,7 +10,10 @@ public class Chess3D extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		BorderPane root = FXMLLoader.load(this.getClass().getResource("gui.fxml"));
+		FXMLLoader rootLoader = new FXMLLoader(this.getClass().getResource("gui.fxml"));
+		BorderPane root = rootLoader.<BorderPane>load();
+		GUIController rootController = rootLoader.<GUIController>getController();
+		rootController.init(primaryStage);
 
 		primaryStage.setScene(new Scene(root));
 		primaryStage.show();

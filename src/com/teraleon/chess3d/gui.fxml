@@ -5,26 +5,29 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.teraleon.chess3d.GUIController">
-   <top>
-      <MenuBar BorderPane.alignment="CENTER">
-        <menus>
-          <Menu mnemonicParsing="false" text="File">
-            <items>
-                  <MenuItem fx:id="newGameButton" mnemonicParsing="false" text="New Game" />
-                  <MenuItem fx:id="saveGameButton" mnemonicParsing="false" text="Save Game" />
-              <MenuItem fx:id="closeButton" mnemonicParsing="false" text="Close" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="Settings">
-               <items>
-                  <CheckMenuItem fx:id="toggle3DButton" mnemonicParsing="false" text="3D" />
-               </items>
-          </Menu>
-        </menus>
-      </MenuBar>
-   </top>
-   <center>
-      <Canvas fx:id="canvas" height="800.0" width="800.0" BorderPane.alignment="CENTER" />
-   </center>
+<BorderPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+	xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.teraleon.chess3d.GUIController">
+	<top>
+		<MenuBar BorderPane.alignment="CENTER">
+			<menus>
+				<Menu mnemonicParsing="false" text="File">
+					<items>
+						<MenuItem fx:id="newGameButton" mnemonicParsing="false" text="New..." />
+						<MenuItem fx:id="openGameButton" mnemonicParsing="false" text="Open..." />
+						<SeparatorMenuItem mnemonicParsing="false" />
+						<MenuItem fx:id="closeButton" mnemonicParsing="false" text="Close" />
+						<MenuItem fx:id="saveGameButton" mnemonicParsing="false" text="Save..." />
+					</items>
+				</Menu>
+				<Menu mnemonicParsing="false" text="Settings">
+					<items>
+						<CheckMenuItem fx:id="toggle3DButton" mnemonicParsing="false" text="3D" />
+					</items>
+				</Menu>
+			</menus>
+		</MenuBar>
+	</top>
+	<center>
+		<Canvas fx:id="canvas" height="800.0" width="800.0" BorderPane.alignment="CENTER" />
+	</center>
 </BorderPane>
