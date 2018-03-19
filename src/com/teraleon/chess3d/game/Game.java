@@ -2,8 +2,8 @@ package com.teraleon.chess3d.game;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
 
 import com.teraleon.chess3d.game.pieces.Piece;
@@ -50,6 +50,18 @@ public class Game {
 		in.close();
 	}
 	
+	public void save(File file) throws IOException {
+		PrintWriter out = new PrintWriter(file);
+		out.println(turn);
+		board.getPrimaryPieces().forEach((c, p) -> {
+			out.format("(%d,%d,%d), W, %s\n", c.x, c.y, c.z, p.getClass().getSimpleName());
+		});
+		board.getSecondaryPieces().forEach((c, p) -> {
+			out.format("(%d,%d,%d), B, %s\n", c.x, c.y, c.z, p.getClass().getSimpleName());
+		});
+		out.close();
+	}
+	
 	public void draw(GraphicsContext gc, boolean is3D) {
 		double w = gc.getCanvas().getWidth();
 		double h = gc.getCanvas().getHeight();
@@ -59,8 +71,11 @@ public class Game {
 		
 		if (is3D)
 			board.draw3D(gc);
-		else
+		else {
 			board.draw2D(gc, w, h, new Point2D(w / 2, h / 2), slice);
+			gc.setStroke(Color.BLACK);
+			gc.strokeText("" + (slice + 1), 10, h - 10);
+		}
 	}
 	
 	public void dSlice(int dS) {

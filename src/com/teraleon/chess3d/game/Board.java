@@ -2,7 +2,6 @@ package com.teraleon.chess3d.game;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import com.teraleon.chess3d.game.pieces.Piece;
 import com.teraleon.chess3d.game.pieces.Piece.Side;
@@ -80,6 +79,14 @@ public class Board {
 			}
 	}
 	
+	public Map<Coord, Piece> getPrimaryPieces() {
+		return primaryPieces;
+	}
+
+	public Map<Coord, Piece> getSecondaryPieces() {
+		return secondaryPieces;
+	}
+
 	public void draw3D(GraphicsContext gc) {
 		// TODO
 	}

@@ -40,10 +40,11 @@ public class GUIController {
 			this.drawGame(game);
 		});
 		
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Chess3D Files", "*.chs"), new ExtensionFilter("All Files", "*.*"));
+		
 		openGameButton.setOnAction(evt -> {
-			FileChooser fileChooser = new FileChooser();
 			fileChooser.setTitle("Open");
-			fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Chess3D Files", "*.chs"), new ExtensionFilter("All Files", "*.*"));
 			File file = fileChooser.showOpenDialog(primaryStage);
 			if (file != null)
 				try {
@@ -54,7 +55,20 @@ public class GUIController {
 			this.drawGame(game);
 		});
 		
+		saveGameButton.setOnAction(evt -> {
+			fileChooser.setTitle("Save");
+			File file = fileChooser.showSaveDialog(primaryStage);
+			if (file != null)
+				try {
+					game.save(file);
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+		});
+		
 		root.setOnScroll(scrollEvt -> {
+			if (game == null)
+				return;
 			game.dSlice((int) Math.signum(scrollEvt.getDeltaY()));
 			this.drawGame(game);
 		});
