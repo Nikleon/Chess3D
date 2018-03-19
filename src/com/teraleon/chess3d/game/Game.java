@@ -74,7 +74,12 @@ public class Game {
 		else {
 			board.draw2D(gc, w, h, new Point2D(w / 2, h / 2), slice);
 			gc.setStroke(Color.BLACK);
-			gc.strokeText("" + (slice + 1), 10, h - 10);
+			gc.strokeText("Slice: " + (slice + 1), 10, h - 10);
+			
+			if (turn % 2 == 0)
+				gc.strokeText("Turn: " + turn + ", B", 7 * w / 8 + 10, h - 10);
+			else
+				gc.strokeText("Turn: " + turn + ", W", 7 * w / 8 + 10, h - 10);
 		}
 	}
 	
