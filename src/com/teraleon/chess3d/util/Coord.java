@@ -11,6 +11,10 @@ public class Coord {
 		this.z = z;
 	}
 
+	public static Coord of(int x, int y, int z) {
+		return new Coord(x, y, z);
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof Coord)) {
@@ -20,12 +24,12 @@ public class Coord {
 		Coord that = (Coord) o;
 		return (this.x == that.x && this.y == that.y && this.z == that.z);
 	}
-	
+
 	@Override
 	public int hashCode() {
-		return x + 512*y + 262144*z;
+		return x + 512 * y + 262144 * z;
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("(%d,%d,%d)", x, y, z);
