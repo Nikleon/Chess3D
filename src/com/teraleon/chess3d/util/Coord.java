@@ -11,6 +11,14 @@ public class Coord {
 		this.z = z;
 	}
 
+	public Coord add(Coord that) {
+		return Coord.of(this.x + that.x, this.y + that.y, this.z + that.z);
+	}
+
+	public Coord scale(int sx, int sy, int sz) {
+		return Coord.of(sx * x, sy * y, sz * z);
+	}
+
 	public static Coord of(int x, int y, int z) {
 		return new Coord(x, y, z);
 	}

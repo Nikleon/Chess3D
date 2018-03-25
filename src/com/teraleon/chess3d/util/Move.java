@@ -1,26 +1,31 @@
 package com.teraleon.chess3d.util;
 
-import java.util.function.Predicate;
-
-import com.teraleon.chess3d.game.Board;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 
 public class Move {
 
 	private final Coord offset;
 
-	private final Predicate<Board> filter;
+	private final BiPredicate<Context, Move> filter;
+	private final BiConsumer<Context, Move> action;
 
-	public Move(Coord off, Predicate<Board> filt) {
+	public Move(Coord off, BiPredicate<Context, Move> filt, BiConsumer<Context, Move> act) {
 		this.offset = off;
 		this.filter = filt;
+		this.action = act;
 	}
 
 	public Coord getOffset() {
 		return offset;
 	}
 
-	public Predicate<Board> getFilter() {
+	public BiPredicate<Context, Move> getFilter() {
 		return filter;
+	}
+
+	public BiConsumer<Context, Move> getAction() {
+		return action;
 	}
 
 }
