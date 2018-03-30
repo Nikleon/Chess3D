@@ -5,7 +5,8 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
-import com.teraleon.chess3d.util.Context;
+import com.teraleon.chess3d.game.Game.Context;
+import com.teraleon.chess3d.game.Game.Side;
 import com.teraleon.chess3d.util.Coord;
 import com.teraleon.chess3d.util.Move;
 
@@ -14,107 +15,113 @@ import javafx.scene.canvas.GraphicsContext;
 
 public class Pawn extends Piece {
 
-	// Note: both directions are added in getMoves()
+	/* ADVANCE MOVE */
 	private static final Coord ADVANCE = Coord.of(1, 0, 0);
-	private static final BiPredicate<Context, Move> ADVANCE_RULE = (context, move) -> {
-		Coord offset = move.getOffset();
-		if (context.board.getSide(context.coord) == Side.WHITE) {
-			if (offset.x < 0)
-				return false;
-		} else {
-			if (offset.x > 0)
-				return false;
-		}
+	private static final BiPredicate<Context, Move> ADVANCE_RULE = (ctx, move) -> {
+		// If traveling against the piece's default moving direction, not a valid move
+		if (ctx.getLocalSide().dx * move.getOffset().x < 0)
+			return false;
 
-		return (context.board.getPieceAt(context.coord.add(offset)) == null);
+		// Valid move iff target tile is empty
+		return (ctx.getBoard().getPieceAt(ctx.getTarget(move.getOffset())) == null);
 	};
-	private static final BiConsumer<Context, Move> ADVANCE_ACTION = (context, move) -> {
-		Coord offset = move.getOffset();
-		Side side = context.board.getSide(context.coord);
-		Pawn p = (Pawn) context.board.removePiece(context.coord, side);
-		context.board.setPiece(context.coord.add(offset), p, side);
+	private static final BiConsumer<Context, Move> ADVANCE_ACTION = (ctx, move) -> {
+		// Remove pawn from local tile
+		Pawn pawn = (Pawn) ctx.getBoard().removePiece(ctx.getPos(), ctx.getLocalSide());
+
+		// Place pawn on advance tile
+		ctx.getBoard().setPiece(ctx.getTarget(move.getOffset()), pawn, ctx.getLocalSide());
 	};
 
+	/* DOUBLE ADVANCE MOVE */
 	private static final Coord DOUBLE_ADVANCE = Coord.of(2, 0, 0);
-	private static final BiPredicate<Context, Move> DOUBLE_ADVANCE_RULE = (context, move) -> {
-		Coord offset = move.getOffset();
-		if (context.board.getSide(context.coord) == Side.WHITE) {
-			if (offset.x < 0 || context.coord.x != 1)
-				return false;
-			if (context.board.getPieceAt(context.coord.add(Coord.of(1, 0, 0))) != null)
+	private static final BiPredicate<Context, Move> DOUBLE_ADVANCE_RULE = (ctx, move) -> {
+		Side side = ctx.getLocalSide();
+
+		// If traveling against the piece's default moving direction, not a valid move
+		if (side.dx * move.getOffset().x < 0)
+			return false;
+
+		// If not on side's respective second rank, double advance is not valid
+		if (side == Side.WHITE) {
+			if (ctx.getPos().x != 1)
 				return false;
 		} else {
-			if (offset.x > 0 || context.coord.x != 6)
-				return false;
-			if (context.board.getPieceAt(context.coord.add(Coord.of(-1, 0, 0))) != null)
+			if (ctx.getPos().x != 6)
 				return false;
 		}
 
-		return (context.board.getPieceAt(context.coord.add(offset)) == null);
+		// If there is a piece blocking the way, not a valid move
+		Coord interTile = ctx.getTarget(side.getDefaultStep());
+		if (ctx.getBoard().getPieceAt(interTile) != null)
+			return false;
+
+		// Valid move iff target tile is empty
+		return (ctx.getBoard().getPieceAt(ctx.getTarget(move.getOffset())) == null);
 	};
-	private static final BiConsumer<Context, Move> DOUBLE_ADVANCE_ACTION = (context, move) -> {
-		Coord offset = move.getOffset();
-		Side side = context.board.getSide(context.coord);
-		Pawn p = (Pawn) context.board.removePiece(context.coord, side);
-		context.board.setPiece(context.coord.add(offset), p, side);
-		p.setLastDouble(context.turn);
+	private static final BiConsumer<Context, Move> DOUBLE_ADVANCE_ACTION = (ctx, move) -> {
+		// Remove pawn from local tile
+		Pawn pawn = (Pawn) ctx.getBoard().removePiece(ctx.getPos(), ctx.getLocalSide());
+
+		// Place pawn on double advance tile
+		ctx.getBoard().setPiece(ctx.getTarget(move.getOffset()), pawn, ctx.getLocalSide());
+
+		// Update turn number of most recent double advance
+		pawn.setLastDouble(ctx.getTurn());
 	};
 
+	/* CAPTURE MOVES */
 	private static final Coord CAPTURES[] = { Coord.of(1, -1, 0), Coord.of(1, 1, 0), Coord.of(1, 0, -1),
 			Coord.of(1, 0, 1) };
-	private static final BiPredicate<Context, Move> CAPTURE_RULE = (context, move) -> {
-		Side side = context.board.getSide(context.coord);
-		Coord offset = move.getOffset();
-		if (side == Side.WHITE) {
-			if (offset.x < 0)
-				return false;
-		} else {
-			if (offset.x > 0)
-				return false;
+	private static final BiPredicate<Context, Move> CAPTURE_RULE = (ctx, move) -> {
+		Coord target = ctx.getTarget(move.getOffset());
+
+		// If traveling against the piece's default moving direction, not a valid move
+		if (ctx.getLocalSide().dx * move.getOffset().x < 0)
+			return false;
+
+		// If there is an adjacent enemy pawn on same file, check if it double advanced
+		// last turn
+		Coord daTarget = Coord.of(ctx.getPos().x, target.y, target.z);
+		Piece daPiece = ctx.getBoard().getPieceAt(daTarget, (ctx.getTurn() + 1) % 2);
+		if (daPiece instanceof Pawn) {
+			Pawn pawn = (Pawn) daPiece;
+			// Iff it did, capture is possible
+			return pawn.lastTurnWasDouble(ctx.getTurn());
 		}
 
-		Coord target = context.coord.add(offset);
-		
-		Coord doubleAdvanceTarget = Coord.of(context.coord.x, target.y, target.z);
-		Piece DAPiece = context.board.getPieceAt(doubleAdvanceTarget, context.turn + 1);
-		if (DAPiece instanceof Pawn) {
-			Pawn pawn = (Pawn) DAPiece;
-			return pawn.lastTurnWasDouble(context.turn);
-		}
-		
-		return (context.board.getPieceAt(target) != null && context.board.getSide(target) != side);
+		// Valid move iff target tile contains a piece and that piece is an enemy
+		return (ctx.getBoard().getPieceAt(target) != null && ctx.getBoard().getSide(target) != ctx.getLocalSide());
 	};
 	private static final BiConsumer<Context, Move> CAPTURE_ACTION = (context, move) -> {
-		Side side = context.board.getSide(context.coord);
+		Side side = context.getLocalSide();
 		Side oppSide = (side == Side.WHITE) ? Side.BLACK : Side.WHITE;
-		Coord target = context.coord.add(move.getOffset());
+		Coord target = context.getTarget(move.getOffset());
 
-		Piece capturedPiece = context.board.removePiece(target, oppSide);
+		// Remove captured piece from board
+		Piece capturedPiece = context.getBoard().removePiece(target, oppSide);
+		// If there was no piece at capture target, it is an en passant
 		if (capturedPiece == null)
-			context.board.removePiece(Coord.of(context.coord.x, target.y, target.z), oppSide);
+			context.getBoard().removePiece(Coord.of(context.getPos().x, target.y, target.z), oppSide);
 
-		Pawn p = (Pawn) context.board.removePiece(context.coord, side);
-		context.board.setPiece(target, p, side);
+		// Remove pawn from local tile
+		Pawn p = (Pawn) context.getBoard().removePiece(context.getPos(), side);
+
+		// Place pawn on capture tile
+		context.getBoard().setPiece(target, p, side);
 	};
-	
+
 	private int lastDouble;
-	
+
 	public Pawn() {
-		lastDouble = -2;
-	}
-	
-	public boolean lastTurnWasDouble(int turn) {
-		return turn - 1 == lastDouble;
-	}
-	
-	public void setLastDouble(int turn) {
-		this.lastDouble = turn;
+		lastDouble = -1;
 	}
 
 	@Override
 	public Set<Move> getMoves() {
 		Set<Move> moves = new HashSet<>();
 
+		// Add moves wrt both black and white pawns - will be filtered later
 		for (int dir : new int[] { -1, 1 }) {
 			moves.add(new Move(ADVANCE.scale(dir, 1, 1), ADVANCE_RULE, ADVANCE_ACTION));
 
@@ -130,6 +137,14 @@ public class Pawn extends Piece {
 	public void draw2D(GraphicsContext gc, double w, double h, Point2D c) {
 		gc.fillOval(c.getX() - w / 2, c.getY() - h / 2, w, h);
 		gc.strokeOval(c.getX() - w / 2, c.getY() - h / 2, w, h);
+	}
+
+	private boolean lastTurnWasDouble(int turn) {
+		return turn - 1 == lastDouble;
+	}
+
+	private void setLastDouble(int turn) {
+		this.lastDouble = turn;
 	}
 
 }

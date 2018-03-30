@@ -9,12 +9,8 @@ import javafx.scene.canvas.GraphicsContext;
 
 public abstract class Piece {
 
-	public enum Side {
-		WHITE, BLACK
-	}
+	public abstract Set<Move> getMoves();
 
 	public abstract void draw2D(GraphicsContext gc, double w, double h, Point2D c);
-
-	public abstract Set<Move> getMoves();
 
 }

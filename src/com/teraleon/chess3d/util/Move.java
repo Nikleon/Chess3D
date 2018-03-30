@@ -3,6 +3,8 @@ package com.teraleon.chess3d.util;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
+import com.teraleon.chess3d.game.Game.Context;
+
 public class Move {
 
 	private final Coord offset;

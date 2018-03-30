@@ -6,9 +6,9 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
+import com.teraleon.chess3d.game.Game.Context;
+import com.teraleon.chess3d.game.Game.Side;
 import com.teraleon.chess3d.game.pieces.Piece;
-import com.teraleon.chess3d.game.pieces.Piece.Side;
-import com.teraleon.chess3d.util.Context;
 import com.teraleon.chess3d.util.Coord;
 import com.teraleon.chess3d.util.Move;
 
@@ -28,7 +28,7 @@ public class Board {
 	private static final Color PIECE_SECONDARY_STROKE = Color.BLACK;
 
 	private static final BiPredicate<Context, Move> BOUNDING_RULE = (context, move) -> {
-		Coord target = context.coord.add(move.getOffset());
+		Coord target = context.getTarget(move.getOffset());
 		return (0 <= target.x && target.x <= 7) && (0 <= target.y && target.y <= 7) && (0 <= target.z && target.z <= 7);
 	};
 
@@ -41,6 +41,9 @@ public class Board {
 	}
 
 	public void setPiece(Coord coord, Piece piece, Side side) {
+		primaryPieces.remove(coord);
+		secondaryPieces.remove(coord);
+
 		if (side == Side.WHITE)
 			primaryPieces.put(coord, piece);
 		else if (side == Side.BLACK)
