@@ -6,6 +6,7 @@ import java.io.IOException;
 import com.teraleon.chess3d.game.Game;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.MenuItem;
@@ -95,6 +96,9 @@ public class GUIController {
 		canvas.setOnMouseClicked(evt -> {
 			if (game == null)
 				return;
+			Point2D point = canvas.sceneToLocal(evt.getSceneX(), evt.getSceneY());
+			game.handleClick(point.getX(), point.getY(), canvas.getWidth(), canvas.getHeight());
+			this.drawGame(game);
 		});
 	}
 
