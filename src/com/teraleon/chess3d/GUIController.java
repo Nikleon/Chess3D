@@ -97,7 +97,8 @@ public class GUIController {
 			if (game == null)
 				return;
 			Point2D point = canvas.sceneToLocal(evt.getSceneX(), evt.getSceneY());
-			game.handleClick(point.getX(), point.getY(), canvas.getWidth(), canvas.getHeight());
+			game.handleClick(point.getX(), point.getY(), canvas.getWidth(), canvas.getHeight(),
+					evt.isSecondaryButtonDown());
 			this.drawGame(game);
 		});
 	}
