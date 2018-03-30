@@ -6,10 +6,12 @@ public class Context {
 
 	public final Board board;
 	public final Coord coord;
+	public final int turn;
 
-	public Context(Board b, Coord c) {
+	public Context(Board b, Coord c, int t) {
 		this.board = b;
 		this.coord = c;
+		this.turn = t;
 	}
 
 }

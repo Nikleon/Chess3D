@@ -106,6 +106,7 @@ public class Game {
 	}
 
 	public void handleClick(double mx, double my, double w, double h, boolean right) {
+		
 		if (right) {
 			displayedMoves.clear();
 			return;
@@ -115,9 +116,10 @@ public class Game {
 		int y = (int) (8 * my / h);
 
 		Coord coord = Coord.of(x, y, slice);
+		
 		if (displayedMoves.containsKey(coord)) {
 			Move move = displayedMoves.get(coord);
-			move.getAction().accept(new Context(board, clickedCoord), move);
+			move.getAction().accept(new Context(board, clickedCoord, turn), move);
 
 			turn++;
 			displayedMoves.clear();
@@ -129,11 +131,13 @@ public class Game {
 		Piece p = board.getPieceAt(coord, turn);
 		if (p == null)
 			return;
-
-		board.getValidMoves(coord, p).forEach(move -> {
+		
+		clickedCoord = coord;
+		
+		board.getValidMoves(new Context(board, clickedCoord, turn), p).forEach(move -> {
 			displayedMoves.put(coord.add(move.getOffset()), move);
 		});
-		clickedCoord = coord;
+		
 	}
 
 }

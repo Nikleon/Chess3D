@@ -31,7 +31,7 @@ public class Pawn extends Piece {
 	private static final BiConsumer<Context, Move> ADVANCE_ACTION = (context, move) -> {
 		Coord offset = move.getOffset();
 		Side side = context.board.getSide(context.coord);
-		Piece p = context.board.removePiece(context.coord, side);
+		Pawn p = (Pawn) context.board.removePiece(context.coord, side);
 		context.board.setPiece(context.coord.add(offset), p, side);
 	};
 
@@ -55,13 +55,14 @@ public class Pawn extends Piece {
 	private static final BiConsumer<Context, Move> DOUBLE_ADVANCE_ACTION = (context, move) -> {
 		Coord offset = move.getOffset();
 		Side side = context.board.getSide(context.coord);
-		Piece p = context.board.removePiece(context.coord, side);
+		Pawn p = (Pawn) context.board.removePiece(context.coord, side);
 		context.board.setPiece(context.coord.add(offset), p, side);
+		p.setLastDouble(context.turn);
 	};
 
 	private static final Coord CAPTURES[] = { Coord.of(1, -1, 0), Coord.of(1, 1, 0), Coord.of(1, 0, -1),
 			Coord.of(1, 0, 1) };
-	private static final BiPredicate<Context, Move> CAPTURES_RULE = (context, move) -> {
+	private static final BiPredicate<Context, Move> CAPTURE_RULE = (context, move) -> {
 		Side side = context.board.getSide(context.coord);
 		Coord offset = move.getOffset();
 		if (side == Side.WHITE) {
@@ -73,17 +74,42 @@ public class Pawn extends Piece {
 		}
 
 		Coord target = context.coord.add(offset);
+		
+		Coord doubleAdvanceTarget = Coord.of(context.coord.x, target.y, target.z);
+		Piece DAPiece = context.board.getPieceAt(doubleAdvanceTarget, context.turn + 1);
+		if (DAPiece instanceof Pawn) {
+			Pawn pawn = (Pawn) DAPiece;
+			return pawn.lastTurnWasDouble(context.turn);
+		}
+		
 		return (context.board.getPieceAt(target) != null && context.board.getSide(target) != side);
 	};
 	private static final BiConsumer<Context, Move> CAPTURE_ACTION = (context, move) -> {
 		Side side = context.board.getSide(context.coord);
+		Side oppSide = (side == Side.WHITE) ? Side.BLACK : Side.WHITE;
 		Coord target = context.coord.add(move.getOffset());
 
-		context.board.removePiece(target, (side == Side.WHITE) ? Side.BLACK : Side.WHITE);
+		Piece capturedPiece = context.board.removePiece(target, oppSide);
+		if (capturedPiece == null)
+			context.board.removePiece(Coord.of(context.coord.x, target.y, target.z), oppSide);
 
-		Piece p = context.board.removePiece(context.coord, side);
+		Pawn p = (Pawn) context.board.removePiece(context.coord, side);
 		context.board.setPiece(target, p, side);
 	};
+	
+	private int lastDouble;
+	
+	public Pawn() {
+		lastDouble = -2;
+	}
+	
+	public boolean lastTurnWasDouble(int turn) {
+		return turn - 1 == lastDouble;
+	}
+	
+	public void setLastDouble(int turn) {
+		this.lastDouble = turn;
+	}
 
 	@Override
 	public Set<Move> getMoves() {
@@ -95,7 +121,7 @@ public class Pawn extends Piece {
 			moves.add(new Move(DOUBLE_ADVANCE.scale(dir, 1, 1), DOUBLE_ADVANCE_RULE, DOUBLE_ADVANCE_ACTION));
 
 			for (Coord c : CAPTURES)
-				moves.add(new Move(c.scale(dir, 1, 1), CAPTURES_RULE, CAPTURE_ACTION));
+				moves.add(new Move(c.scale(dir, 1, 1), CAPTURE_RULE, CAPTURE_ACTION));
 		}
 		return moves;
 	}

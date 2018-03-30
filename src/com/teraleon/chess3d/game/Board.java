@@ -86,9 +86,7 @@ public class Board {
 		return null;
 	}
 
-	public Set<Move> getValidMoves(Coord coord, Piece piece) {
-		Context context = new Context(this, coord);
-
+	public Set<Move> getValidMoves(Context context, Piece piece) {
 		Set<Move> pm = piece.getMoves();
 
 		BiPredicate<Context, Move> filter = BOUNDING_RULE;
