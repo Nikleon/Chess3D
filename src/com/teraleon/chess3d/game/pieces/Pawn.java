@@ -26,11 +26,13 @@ public class Pawn extends Piece {
 		return (ctx.getBoard().getPieceAt(ctx.getTarget(move.getOffset())) == null);
 	};
 	private static final BiConsumer<Context, Move> ADVANCE_ACTION = (ctx, move) -> {
+		Side side = ctx.getLocalSide();
+
 		// Remove pawn from local tile
-		Pawn pawn = (Pawn) ctx.getBoard().removePiece(ctx.getPos(), ctx.getLocalSide());
+		Pawn pawn = (Pawn) ctx.getBoard().removePiece(ctx.getPos(), side);
 
 		// Place pawn on advance tile
-		ctx.getBoard().setPiece(ctx.getTarget(move.getOffset()), pawn, ctx.getLocalSide());
+		ctx.getBoard().setPiece(ctx.getTarget(move.getOffset()), pawn, side);
 	};
 
 	/* DOUBLE ADVANCE MOVE */
@@ -60,11 +62,13 @@ public class Pawn extends Piece {
 		return (ctx.getBoard().getPieceAt(ctx.getTarget(move.getOffset())) == null);
 	};
 	private static final BiConsumer<Context, Move> DOUBLE_ADVANCE_ACTION = (ctx, move) -> {
+		Side side = ctx.getLocalSide();
+		
 		// Remove pawn from local tile
-		Pawn pawn = (Pawn) ctx.getBoard().removePiece(ctx.getPos(), ctx.getLocalSide());
+		Pawn pawn = (Pawn) ctx.getBoard().removePiece(ctx.getPos(), side);
 
 		// Place pawn on double advance tile
-		ctx.getBoard().setPiece(ctx.getTarget(move.getOffset()), pawn, ctx.getLocalSide());
+		ctx.getBoard().setPiece(ctx.getTarget(move.getOffset()), pawn, side);
 
 		// Update turn number of most recent double advance
 		pawn.setLastDouble(ctx.getTurn());
@@ -93,22 +97,22 @@ public class Pawn extends Piece {
 		// Valid move iff target tile contains a piece and that piece is an enemy
 		return (ctx.getBoard().getPieceAt(target) != null && ctx.getBoard().getSide(target) != ctx.getLocalSide());
 	};
-	private static final BiConsumer<Context, Move> CAPTURE_ACTION = (context, move) -> {
-		Side side = context.getLocalSide();
+	private static final BiConsumer<Context, Move> CAPTURE_ACTION = (ctx, move) -> {
+		Side side = ctx.getLocalSide();
 		Side oppSide = (side == Side.WHITE) ? Side.BLACK : Side.WHITE;
-		Coord target = context.getTarget(move.getOffset());
+		Coord target = ctx.getTarget(move.getOffset());
 
 		// Remove captured piece from board
-		Piece capturedPiece = context.getBoard().removePiece(target, oppSide);
+		Piece capturedPiece = ctx.getBoard().removePiece(target, oppSide);
 		// If there was no piece at capture target, it is an en passant
 		if (capturedPiece == null)
-			context.getBoard().removePiece(Coord.of(context.getPos().x, target.y, target.z), oppSide);
+			ctx.getBoard().removePiece(Coord.of(ctx.getPos().x, target.y, target.z), oppSide);
 
 		// Remove pawn from local tile
-		Pawn p = (Pawn) context.getBoard().removePiece(context.getPos(), side);
+		Pawn p = (Pawn) ctx.getBoard().removePiece(ctx.getPos(), side);
 
 		// Place pawn on capture tile
-		context.getBoard().setPiece(target, p, side);
+		ctx.getBoard().setPiece(target, p, side);
 	};
 
 	private int lastDouble;
