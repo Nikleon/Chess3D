@@ -63,7 +63,7 @@ public class Pawn extends Piece {
 	};
 	private static final BiConsumer<Context, Move> DOUBLE_ADVANCE_ACTION = (ctx, move) -> {
 		Side side = ctx.getLocalSide();
-		
+
 		// Remove pawn from local tile
 		Pawn pawn = (Pawn) ctx.getBoard().removePiece(ctx.getPos(), side);
 
@@ -117,8 +117,19 @@ public class Pawn extends Piece {
 
 	private int lastDouble;
 
-	public Pawn() {
+	public Pawn(Integer moveCount) {
+		super(moveCount);
 		lastDouble = -1;
+	}
+
+	public Pawn(Integer moveCount, Integer lastDA) {
+		super(moveCount);
+		this.lastDouble = lastDA;
+	}
+
+	@Override
+	public String getParameters() {
+		return ", " + this.getMoveCount();
 	}
 
 	@Override

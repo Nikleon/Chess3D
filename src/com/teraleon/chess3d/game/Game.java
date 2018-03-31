@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -13,6 +15,7 @@ import com.teraleon.chess3d.util.Coord;
 import com.teraleon.chess3d.util.Move;
 
 import javafx.geometry.Point2D;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
@@ -63,8 +66,17 @@ public class Game {
 			Side side = (line[1].charAt(0) == 'W') ? Side.WHITE : Side.BLACK;
 
 			Class<?> clazz = Class.forName("com.teraleon.chess3d.game.pieces." + line[2]);
-			Constructor<?> constructor = clazz.getConstructor();
-			Piece piece = (Piece) constructor.newInstance();
+			List<Integer> params = new ArrayList<>();
+			List<Class<Integer>> types = new ArrayList<>();
+			params.add(Integer.parseInt(line[3]));
+			types.add(Integer.class);
+			if (line.length == 5)
+				for (String paramStr : line[4].split(" ")) {
+					params.add(Integer.parseInt(paramStr));
+					types.add(Integer.class);
+				}
+			Constructor<?> constructor = clazz.getConstructor(types.toArray(new Class<?>[0]));
+			Piece piece = (Piece) constructor.newInstance(params.toArray());
 
 			board.setPiece(coord, piece, side);
 		}
@@ -84,10 +96,12 @@ public class Game {
 		PrintWriter out = new PrintWriter(file);
 		out.println(turn);
 		board.getPrimaryPieces().forEach((c, p) -> {
-			out.format("(%d,%d,%d), W, %s\n", c.x, c.y, c.z, p.getClass().getSimpleName());
+			out.format("(%d,%d,%d), W, %s, %s%s\n", c.x, c.y, c.z, p.getClass().getSimpleName(), p.getMoveCount(),
+					p.getParameters());
 		});
 		board.getSecondaryPieces().forEach((c, p) -> {
-			out.format("(%d,%d,%d), B, %s\n", c.x, c.y, c.z, p.getClass().getSimpleName());
+			out.format("(%d,%d,%d), B, %s, %s%s\n", c.x, c.y, c.z, p.getClass().getSimpleName(), p.getMoveCount(),
+					p.getParameters());
 		});
 		out.close();
 	}
@@ -166,6 +180,7 @@ public class Game {
 		Coord coord = Coord.of(x, y, slice);
 
 		if (displayedMoves.containsKey(coord)) {
+			board.getPieceAt(clickedCoord, turn).incrementMoveCount();
 			Move move = displayedMoves.get(coord);
 			move.getAction().accept(new Context(clickedCoord), move);
 
